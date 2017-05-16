@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<meta name="viewport" content="width=1024">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="/temperature/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<link rel="stylesheet" href="css/ARTIM.css" type="text/css" charset="utf-8" />  
+
+<title>ARTIM Status</title>
+ 
+<head>
+    <script src="vendor/mqttws31.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+	var MQTTbroker = '10.128.249.64';
+	var MQTTport = 9001;
+	var MQTTStatus = '';
+	var ARTIMStatus = '';
+	var AAIStatus = '';
+	var SYSTEMStatus = '';
+
+//mqtt broker setup
+	var client = new Paho.MQTT.Client(MQTTbroker, MQTTport, "/ws", "clientid_60");
+	client.onMessageArrived = onMessageArrived;
+	client.onConnectionLost = onConnectionLost;
+	//connect to broker is at the bottom of the init() function !!!!
+	
+
+//mqtt connecton options including the mqtt broker subscriptions
+	var options = {
+		timeout: 10,
+		onSuccess: function () {
+			console.log("mqtt connected");
+			MQTTStatus = 'Connected';
+			document.getElementById("MQTTStatus").innerHTML = MQTTStatus;
+			// Connection succeeded; subscribe to our topics
+			client.subscribe('ARTIM',  {qos: 1});
+			client.subscribe('AAI',  {qos: 1});
+			client.subscribe('SYSTEM',  {qos: 1});
+
+		},
+		onFailure: function (message) {
+			console.log("Connection failed, will wait 20 seconds then try again, ERROR: " + message.errorMessage);
+			MQTTStatus = 'Connection failed: '+ message.errorMessage;
+			document.getElementById("MQTTStatus").innerHTML = MQTTStatus;
+			//window.setTimeout(init,20000); //wait 20seconds before trying to connect again.
+			window.setTimeout(location.reload(),20000); //wait 20seconds before trying to connect again.
+		}
+	};
+
+
+	function onConnectionLost(responseObject) {
+		console.log("connection lost: " + responseObject.errorMessage);
+		document.getElementById("MQTTStatus").innerHTML = MQTTStatus;
+		window.setTimeout(location.reload(),20000);
+        //window.setTimeout(init,20000); //wait 20seconds before trying to connect again.
+	};
+
+//what is done when a message arrives from the broker
+	function onMessageArrived(message) {
+		console.log(message.destinationName + ': ',message.payloadString);
+		if (message.destinationName=="ARTIM") {
+			ARTIMStatus = message.payloadString;
+			document.getElementById("ARTIMStatus").innerHTML = ARTIMStatus;
+		}
+		if (message.destinationName=="AAI") {
+			AAIStatus = message.payloadString;
+			document.getElementById("AAIStatus").innerHTML = AAIStatus;
+		}
+		if (message.destinationName=="SYSTEM") {
+			SYSTEMStatus = message.payloadString;
+			document.getElementById("SYSTEMStatus").innerHTML = SYSTEMStatus;
+		};
+
+	};
+
+//create the clock with date/time
+	function date_time(id) {
+        date = new Date;
+        year = date.getFullYear();
+        month = date.getMonth();
+        months = new Array('January', 'February', 'March', 'April', 'May', 'June', 'Jully', 'August', 'September', 'October', 'November', 'December');
+        d = date.getDate();
+        day = date.getDay();
+        days = new Array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday');
+        h = date.getHours();
+        if(h<10)
+        {
+                h = "0"+h;
+        }
+        m = date.getMinutes();
+        if(m<10)
+        {
+                m = "0"+m;
+        }
+        s = date.getSeconds();
+        if(s<10)
+        {
+                s = "0"+s;
+        }
+        //result = '<div class="alert-box success">It is <span> '+h+':'+m+':'+s+'</span> on '+days[day]+' '+months[month]+' '+d+' '+year;
+        result = h+':'+m+':'+s+'</p>'+days[day]+' '+months[month]+' '+d+' '+year;
+        document.getElementById(id).innerHTML = result;
+        setTimeout('date_time("'+id+'");','1000');
+        return true;
+		};
+
+//this is what is loaded when the body of the html has called
+	function init()
+	    {
+	 
+		//start time/clock
+		date_time("clock");
+		
+
+		// Connect to MQTT broker
+		client.connect(options);
+	};
+
+    </script>
+</head>
+
+<body onload="init();"><!--Start the javascript ball rolling-->
+
+<div class="wrapper">
+
+	<header class="header">
+	  <table class='clockTable'>
+	   <tr>
+	  	<th>
+	  		<div id="clock" ></div>
+  		</th>
+
+	  </tr>
+	 </table><!-- .clockTable-->
+	 <table class="MQTTTable">
+		 <tr>
+			<td>
+				<p>MQTT: <span id='MQTTStatus'></span></p>
+	    		</td>
+		 </tr>
+	 </table><!-- .MQTTTable-->
+	 <table class="ARTIMTable">
+		 <tr>
+			<td>
+	  			<p>ARTIM: <span id='ARTIMStatus'></span></p>
+	    		</td>
+		 </tr>
+	 </table><!-- .ARTIMTable-->
+	 <table class="AAITable">
+		 <tr>
+			<td>
+	  			<p>AAI: <span id='AAIStatus'></span></p>
+	    		</td>
+		 </tr>
+	 </table><!-- .AAITable-->
+	 <table class="SYSTEMTable">
+		 <tr>
+			<td>
+				<p>SYSTEM: <span id='SYSTEMStatus'></span></p>
+	    		</td>
+		 </tr>
+	 </table><!-- .SYSTEMTable-->
+	</header><!-- .header-->
+	 
+
+</div><!-- .wrapper -->  
+
+</body>
+
+</html>

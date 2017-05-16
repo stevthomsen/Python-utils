@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<data>
+  <configuration>
+    <image_name>/usr/local/src/AAI/temp/ubuntu-1.img</image_name>
+    <os_type>Linux</os_type>
+    <db_type>text</db_type>
+    <db_location>/usr/local/src/AAI/AAI.db</db_location>
+  </configuration>
+</data>
+
+

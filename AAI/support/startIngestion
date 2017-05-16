@@ -1,0 +1,3 @@
+#! /bin/bash
+
+echo "Ingestion started" > /var/log/AAIdaemon/AAIdaemon.log

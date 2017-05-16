@@ -1,0 +1,7 @@
+#!/bin/bash
+    for i in {8..30};
+    do
+        /bin/mknod -m640 /dev/loop$i b 7 $i
+        /bin/chown root:disk /dev/loop$i
+    done
+

@@ -1,0 +1,8 @@
+#! /bin/bash
+
+for I in `df | awk '{print $6}' | fgrep \/tmp\/tmp`
+do
+  umount $I
+done
+rm -rf /dev/mapper/loop*
+rm -rf /tmp/tmp*
